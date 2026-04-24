@@ -21,7 +21,9 @@ A fully decentralized community engagement application built on the **NERO block
 
 ## 🌟 System Architecture (End-To-End)
 
-![System Architecture Diagram](./community-platform_NERO/community-platform/assets/diagram-export-24-4-2026-11_09_21-pm.png)
+<div align="center">
+  <img src="./community-platform/assets/diagram-export-24-4-2026-11_09_21-pm.png" alt="system_architecture_diagram"/>
+</div>
 
 This application is built with a decoupled architecture connecting a premium, state-of-the-art React frontend to a secure NERO EVM backend.
 
