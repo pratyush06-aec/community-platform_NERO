@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { checkConnection, createPost, likePost, commentPost, flagPost, removePost, getPost, listPosts, getPostCount } from "../../lib/nero.js";
+import { checkConnection, createPost, likePost, commentPost, flagPost, removePost, getPost, listPosts, getPostCount, REQUIRED_ADDRESS } from "../../lib/nero.js";
 import { 
     Heart, MessageCircle, AlertTriangle, Trash2, PenTool, Zap, 
     BookOpen, User, Wallet, ArrowLeft, Loader2, Search, BarChart3, ChevronRight, CheckCircle2, X 
@@ -118,6 +118,11 @@ export default function CommunityApp({ onExit }) {
     const onConnect = withLoading("connect", () => runAction(async () => {
         const user = await checkConnection();
         if (user) {
+            if (!user.isMatch) {
+                setConnectedAddress("WRONG_ACCOUNT");
+                setWalletState(`Error: Please switch to ${REQUIRED_ADDRESS}`);
+                throw new Error(`Unauthorized Account: Detected ${user.publicKey}, but required ${REQUIRED_ADDRESS}`);
+            }
             setConnectedAddress(user.publicKey);
             setForm((prev) => ({
                 ...prev,
@@ -126,10 +131,12 @@ export default function CommunityApp({ onExit }) {
                 commenter: prev.commenter || user.publicKey,
                 flagger: prev.flagger || user.publicKey,
             }));
+            const next = `Wallet: ${user.publicKey}`;
+            setWalletState(next);
+            return next;
         }
-        const next = user ? `Wallet: ${user.publicKey}` : "Wallet: not connected";
-        setWalletState(next);
-        return next;
+        setWalletState("Wallet: not connected");
+        return "Wallet: not connected";
     }));
 
     const onCreate = withLoading("create", () => runAction(async () => {
@@ -235,10 +242,10 @@ export default function CommunityApp({ onExit }) {
                     <h2>Nero Hub</h2>
                 </div>
                 <div className="wallet-actions">
-                    <div className={`status-indicator ${isConnected ? 'online' : 'offline'}`}></div>
-                    <button className={`wallet-btn ${isConnected ? 'connected' : ''}`} onClick={onConnect} disabled={isBusy}>
+                    <div className={`status-indicator ${isConnected ? (connectedAddress === 'WRONG_ACCOUNT' ? 'offline' : 'online') : 'offline'}`}></div>
+                    <button className={`wallet-btn ${isConnected ? (connectedAddress === 'WRONG_ACCOUNT' ? 'error' : 'connected') : ''}`} onClick={onConnect} disabled={isBusy}>
                         <Wallet size={16} />
-                        {isConnected ? truncAddr : "Connect"}
+                        {connectedAddress === 'WRONG_ACCOUNT' ? "WRONG ACCOUNT" : (isConnected ? truncAddr : "Connect")}
                     </button>
                 </div>
             </header>

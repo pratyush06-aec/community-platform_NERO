@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 
 // Replace with deployed contract address later
 export const CONTRACT_ADDRESS = "0x1eFE3BFe2d9c3533676048c299F99225B5f021E8"; 
+export const REQUIRED_ADDRESS = "0x64dc46C67dDd6842a9fBc6Daf50160b71AF412cf";
 
 const contractABI = [
   "function createPost(string memory _id, string memory _content, string memory _category, string memory _tags) public",
@@ -58,8 +59,17 @@ export const checkConnection = async () => {
         });
         
         if (accounts.length > 0) {
+            const connectedAddr = accounts[0];
+            const isMatch = connectedAddr.toLowerCase().trim() === REQUIRED_ADDRESS.toLowerCase().trim();
+            
+            if (!isMatch) {
+                console.error("Wallet Mismatch: Detected", connectedAddr, "but required", REQUIRED_ADDRESS);
+                // We return the address but mark it as mismatch in the UI
+                return { publicKey: connectedAddr, isMatch: false };
+            }
+
             await ensureNeroChain();
-            return { publicKey: accounts[0] };
+            return { publicKey: connectedAddr, isMatch: true };
         }
         return null;
     } catch (err) {
